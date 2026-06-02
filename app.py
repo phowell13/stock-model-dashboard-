@@ -358,7 +358,41 @@ if not results_df.empty:
         y=df["BB_Lower"],
         name="Bollinger Lower"
     ))
+if not previous_df.empty:
 
+    comparison = results_df.merge(
+        previous_df[["Ticker", "Breakout Score"]],
+        on="Ticker",
+        how="left",
+        suffixes=("", " Previous")
+    )
+
+    comparison["Score Change"] = (
+        comparison["Breakout Score"] -
+        comparison["Breakout Score Previous"]
+    )
+
+    new_breakouts = comparison[
+        (comparison["Breakout Score"] >= 80) &
+        (
+            comparison["Breakout Score Previous"].isna()
+            |
+            (comparison["Breakout Score Previous"] < 70)
+        )
+    ]
+
+    st.subheader("🚀 New Breakouts")
+
+    if not new_breakouts.empty:
+        st.dataframe(
+            new_breakouts.sort_values(
+                "Score Change",
+                ascending=False
+            ),
+            use_container_width=True
+        )
+    else:
+        st.info("No new breakouts detected.")
     fig.add_trace(go.Scatter(
         x=df.index,
         y=df["Resistance_50d"],
