@@ -257,34 +257,40 @@ st.subheader("Penny Stock Breakout Results")
 
 if not results_df.empty:
 
-    comparison = results_df.merge(
-        previous_df[["Ticker", "Breakout Score"]],
-        on="Ticker",
-        how="left",
-        suffixes=("", " Previous")
-    )
-
-    comparison["Score Change"] = (
-        comparison["Breakout Score"] - comparison["Breakout Score Previous"]
-    )
-
-    new_breakouts = comparison[
-        (comparison["Breakout Score"] >= 80) &
-        (
-            (comparison["Breakout Score Previous"].isna()) |
-            (comparison["Breakout Score Previous"] < 70)
+    if not previous_df.empty:
+        comparison = results_df.merge(
+            previous_df[["Ticker", "Breakout Score"]],
+            on="Ticker",
+            how="left",
+            suffixes=("", " Previous")
         )
-    ]
 
-    st.subheader("New Breakouts")
-
-    if not new_breakouts.empty:
-        st.dataframe(
-            new_breakouts.sort_values("Score Change", ascending=False),
-            use_container_width=True
+        comparison["Score Change"] = (
+            comparison["Breakout Score"] -
+            comparison["Breakout Score Previous"]
         )
+
+        new_breakouts = comparison[
+            (comparison["Breakout Score"] >= 80) &
+            (
+                comparison["Breakout Score Previous"].isna()
+                |
+                (comparison["Breakout Score Previous"] < 70)
+            )
+        ]
+
+        st.subheader("🚀 New Breakouts")
+
+        if not new_breakouts.empty:
+            st.dataframe(
+                new_breakouts.sort_values("Score Change", ascending=False),
+                use_container_width=True
+            )
+        else:
+            st.info("No new breakouts detected.")
     else:
-        st.info("No new breakouts detected this scan.")
+        st.info("No previous scan yet. Refresh later to detect new breakouts.")
+
     results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
 
@@ -294,23 +300,26 @@ if not results_df.empty:
             "Try lowering the Top Opportunities filter."
         )
         st.stop()
-st.subheader("🏆 Top Opportunities")
 
-top_opportunities = results_df.head(10)
+    st.subheader("🏆 Top Opportunities")
 
-st.dataframe(
-    top_opportunities[
-        [
-            "Ticker",
-            "Company",
-            "Breakout Score",
-            "Grade",
-            "Volume Ratio",
-            "RSI"
-        ]
-    ],
-    use_container_width=True
-)
+    top_opportunities = results_df.head(10)
+
+    st.dataframe(
+        top_opportunities[
+            [
+                "Ticker",
+                "Company",
+                "Breakout Score",
+                "Grade",
+                "Volume Ratio",
+                "RSI"
+            ]
+        ],
+        use_container_width=True
+    )
+
+    st.subheader("Full Scanner Results")
     st.dataframe(results_df, use_container_width=True)
 
     selected_ticker = st.selectbox(
@@ -351,64 +360,11 @@ st.dataframe(
         name="Price"
     ))
 
-    fig.add_trace(go.Scatter(
-        x=df.index,
-        y=df["MA_20"],
-        name="20D MA"
-    ))
+    fig.add_trace(go.Scatter(x=df.index, y=df["MA_20"], name="20D MA"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["MA_50"], name="50D MA"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["BB_Upper"], name="Bollinger Upper"))
+    fig.add_trace(go.Scatter(x=df.index, y=df["BB_Lower"], name="Bollinger Lower"))
 
-    fig.add_trace(go.Scatter(
-        x=df.index,
-        y=df["MA_50"],
-        name="50D MA"
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df.index,
-        y=df["BB_Upper"],
-        name="Bollinger Upper"
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df.index,
-        y=df["BB_Lower"],
-        name="Bollinger Lower"
-    ))
-if not previous_df.empty:
-
-    comparison = results_df.merge(
-        previous_df[["Ticker", "Breakout Score"]],
-        on="Ticker",
-        how="left",
-        suffixes=("", " Previous")
-    )
-
-    comparison["Score Change"] = (
-        comparison["Breakout Score"] -
-        comparison["Breakout Score Previous"]
-    )
-
-    new_breakouts = comparison[
-        (comparison["Breakout Score"] >= 80) &
-        (
-            comparison["Breakout Score Previous"].isna()
-            |
-            (comparison["Breakout Score Previous"] < 70)
-        )
-    ]
-
-    st.subheader("🚀 New Breakouts")
-
-    if not new_breakouts.empty:
-        st.dataframe(
-            new_breakouts.sort_values(
-                "Score Change",
-                ascending=False
-            ),
-            use_container_width=True
-        )
-    else:
-        st.info("No new breakouts detected.")
     fig.add_trace(go.Scatter(
         x=df.index,
         y=df["Resistance_50d"],
