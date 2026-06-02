@@ -3,16 +3,20 @@ import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Breakout Scanner", layout="wide")
+st.set_page_config(page_title="Penny Stock Breakout Scanner", layout="wide")
 
-st.title("Stock Breakout Scanner")
+st.title("Penny Stock Breakout Scanner")
 
 tickers_input = st.sidebar.text_area(
     "Enter tickers",
-    value="CARR, AAPL, MSFT, NVDA, JCI, TT, HON"
+    value="CARR, SOUN, BBAI, KULR, PREM.L, HE1.L"
 )
 
-period = st.sidebar.selectbox("Period", ["1y", "2y", "5y"], index=1)
+period = st.sidebar.selectbox("Period", ["6mo", "1y", "2y", "5y"], index=2)
+
+max_price = st.sidebar.number_input("Max share price", value=5.00)
+min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=250000)
+min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=100000)
 
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
@@ -29,9 +33,7 @@ def load_price_data(ticker, period):
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
 
-    data = data.dropna()
-
-    return data
+    return data.dropna()
 
 
 def add_indicators(df):
@@ -44,6 +46,10 @@ def add_indicators(df):
     df["MA_200"] = df["Close"].rolling(200).mean()
 
     df["Volume_MA_20"] = df["Volume"].rolling(20).mean()
+    df["Volume_Ratio"] = df["Volume"] / df["Volume_MA_20"]
+
+    df["Value_Traded"] = df["Close"] * df["Volume"]
+    df["Avg_Value_Traded_20D"] = df["Value_Traded"].rolling(20).mean()
 
     df["Resistance_50d"] = df["Close"].rolling(50).max().shift(1)
     df["Support_50d"] = df["Close"].rolling(50).min().shift(1)
@@ -65,43 +71,54 @@ def add_indicators(df):
     high_low = df["High"] - df["Low"]
     high_close = (df["High"] - df["Close"].shift()).abs()
     low_close = (df["Low"] - df["Close"].shift()).abs()
-    true_range = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+
+    true_range = pd.concat(
+        [high_low, high_close, low_close],
+        axis=1
+    ).max(axis=1)
+
     df["ATR_14"] = true_range.rolling(14).mean()
+    df["ATR_Percent"] = df["ATR_14"] / df["Close"]
 
     return df
 
 
-def calculate_breakout_score(df):
+def calculate_penny_breakout_score(df):
     latest = df.iloc[-1]
+
     score = 0
     reasons = []
 
-    squeeze_threshold = df["BB_Width"].rolling(120).quantile(0.2).iloc[-1]
+    squeeze_threshold = df["BB_Width"].rolling(120).quantile(0.25).iloc[-1]
 
     if latest["BB_Width"] < squeeze_threshold:
-        score += 25
+        score += 20
         reasons.append("Volatility squeeze")
 
     if latest["Close"] > latest["Resistance_50d"]:
         score += 25
-        reasons.append("Price broke 50-day resistance")
+        reasons.append("Break above 50D resistance")
 
-    if latest["Volume"] > latest["Volume_MA_20"] * 1.5:
+    if latest["Volume_Ratio"] >= 2:
         score += 20
-        reasons.append("Strong volume confirmation")
+        reasons.append("Volume spike above 2x average")
 
-    if latest["Close"] > latest["MA_50"] and latest["MA_50"] > latest["MA_200"]:
+    if latest["Volume_Ratio"] >= 5:
         score += 15
-        reasons.append("Strong uptrend")
+        reasons.append("Major volume spike above 5x average")
 
-    if 50 < latest["RSI"] < 70:
-        score += 15
-        reasons.append("Healthy RSI momentum")
+    if latest["Close"] > latest["MA_20"] and latest["MA_20"] > latest["MA_50"]:
+        score += 10
+        reasons.append("Short-term trend turning up")
+
+    if 45 <= latest["RSI"] <= 75:
+        score += 10
+        reasons.append("RSI in breakout zone")
 
     if not reasons:
         reasons.append("No major breakout signal yet")
 
-    return score, ", ".join(reasons)
+    return min(score, 100), ", ".join(reasons)
 
 
 results = []
@@ -109,21 +126,32 @@ results = []
 for ticker in tickers:
     try:
         df = load_price_data(ticker, period)
-        df = add_indicators(df)
-        df = df.dropna()
+        df = add_indicators(df).dropna()
 
-        if len(df) < 200:
+        if len(df) < 120:
             continue
 
-        score, reasons = calculate_breakout_score(df)
         latest = df.iloc[-1]
+
+        if latest["Close"] > max_price:
+            continue
+
+        if latest["Volume_MA_20"] < min_avg_volume:
+            continue
+
+        if latest["Avg_Value_Traded_20D"] < min_value_traded:
+            continue
+
+        score, reasons = calculate_penny_breakout_score(df)
 
         results.append({
             "Ticker": ticker,
-            "Close": round(latest["Close"], 2),
+            "Close": round(latest["Close"], 4),
             "Breakout Score": score,
+            "Volume Ratio": round(latest["Volume_Ratio"], 2),
+            "20D Avg Volume": int(latest["Volume_MA_20"]),
+            "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
             "RSI": round(latest["RSI"], 1),
-            "Volume vs 20D Avg": round(latest["Volume"] / latest["Volume_MA_20"], 2),
             "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
             "Signal": reasons
         })
@@ -134,7 +162,7 @@ for ticker in tickers:
 
 results_df = pd.DataFrame(results)
 
-st.subheader("Breakout Scanner Results")
+st.subheader("Penny Stock Breakout Results")
 
 if not results_df.empty:
     results_df = results_df.sort_values("Breakout Score", ascending=False)
@@ -146,21 +174,20 @@ if not results_df.empty:
     )
 
     df = load_price_data(selected_ticker, period)
-    df = add_indicators(df)
-    df = df.dropna()
+    df = add_indicators(df).dropna()
 
-    latest_score, latest_reasons = calculate_breakout_score(df)
+    score, reasons = calculate_penny_breakout_score(df)
 
     st.subheader(f"{selected_ticker} Breakout Dashboard")
 
     col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric("Latest Price", f"${df['Close'].iloc[-1]:.2f}")
-    col2.metric("Breakout Score", f"{latest_score}/100")
-    col3.metric("RSI", f"{df['RSI'].iloc[-1]:.1f}")
-    col4.metric("Volume / 20D Avg", f"{df['Volume'].iloc[-1] / df['Volume_MA_20'].iloc[-1]:.2f}x")
+    col1.metric("Latest Price", f"{df['Close'].iloc[-1]:.4f}")
+    col2.metric("Breakout Score", f"{score}/100")
+    col3.metric("Volume Ratio", f"{df['Volume_Ratio'].iloc[-1]:.2f}x")
+    col4.metric("RSI", f"{df['RSI'].iloc[-1]:.1f}")
 
-    st.write(f"**Signal:** {latest_reasons}")
+    st.write(f"**Signal:** {reasons}")
 
     fig = go.Figure()
 
@@ -175,28 +202,26 @@ if not results_df.empty:
 
     fig.add_trace(go.Scatter(
         x=df.index,
+        y=df["MA_20"],
+        name="20D MA"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=df.index,
         y=df["MA_50"],
         name="50D MA"
     ))
 
     fig.add_trace(go.Scatter(
         x=df.index,
-        y=df["MA_200"],
-        name="200D MA"
-    ))
-
-    fig.add_trace(go.Scatter(
-        x=df.index,
         y=df["BB_Upper"],
-        name="Bollinger Upper",
-        line=dict(width=1)
+        name="Bollinger Upper"
     ))
 
     fig.add_trace(go.Scatter(
         x=df.index,
         y=df["BB_Lower"],
-        name="Bollinger Lower",
-        line=dict(width=1)
+        name="Bollinger Lower"
     ))
 
     fig.add_trace(go.Scatter(
@@ -214,4 +239,4 @@ if not results_df.empty:
     st.plotly_chart(fig, use_container_width=True)
 
 else:
-    st.error("No valid data found. Try different tickers or a longer period.")
+    st.error("No shares passed the penny-stock filters. Try lowering the volume/value thresholds or adding more tickers.")
