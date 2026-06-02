@@ -34,6 +34,14 @@ max_price = st.sidebar.number_input("Max share price", value=5.00)
 min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=250000)
 min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=100000)
 
+min_score = st.sidebar.slider(
+    "Minimum breakout score",
+    min_value=0,
+    max_value=100,
+    value=70,
+    step=5
+)
+
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
 
 
