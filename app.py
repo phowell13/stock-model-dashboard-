@@ -34,14 +34,8 @@ def load_price_data(ticker, period):
         data.columns = data.columns.get_level_values(0)
 
     return data.dropna()
-@st.cache_data
-def get_company_name(ticker):
-    try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
-        return info.get("longName", ticker)
-    except:
-        return ticker
+ticker_obj = yf.Ticker(ticker)
+company_name = ticker_obj.info.get("longName", ticker)
 
 company_name = get_company_name(ticker)
 
@@ -157,21 +151,22 @@ for ticker in tickers:
 
         if latest["Avg_Value_Traded_20D"] < min_value_traded:
             continue
+score, reasons = calculate_penny_breakout_score(df)
 
-        score, reasons = calculate_penny_breakout_score(df)
+company_name = get_company_name(ticker)
 
-        results.append({
-            "Ticker": ticker,
-            "Close": round(latest["Close"], 4),
-            "Breakout Score": score,
-            "Volume Ratio": round(latest["Volume_Ratio"], 2),
-            "20D Avg Volume": int(latest["Volume_MA_20"]),
-            "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
-            "RSI": round(latest["RSI"], 1),
-            "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
-            "Signal": reasons
-        })
-
+results.append({
+    "Ticker": ticker,
+    "Company": company_name,
+    "Close": round(latest["Close"], 4),
+    "Breakout Score": score,
+    "Volume Ratio": round(latest["Volume_Ratio"], 2),
+    "20D Avg Volume": int(latest["Volume_MA_20"]),
+    "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
+    "RSI": round(latest["RSI"], 1),
+    "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
+    "Signal": reasons
+})
     except Exception as e:
         st.warning(f"Could not load {ticker}: {e}")
 
@@ -194,7 +189,14 @@ if not results_df.empty:
 
     score, reasons = calculate_penny_breakout_score(df)
 
-    st.subheader(f"{selected_ticker} Breakout Dashboard")
+    selected_company = results_df.loc[
+    results_df["Ticker"] == selected_ticker,
+    "Company"
+].iloc[0]
+
+st.subheader(
+    f"{selected_company} ({selected_ticker}) Breakout Dashboard"
+)
 
     col1, col2, col3, col4 = st.columns(4)
 
