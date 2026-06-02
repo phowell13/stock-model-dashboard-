@@ -294,7 +294,23 @@ if not results_df.empty:
             "Try lowering the Top Opportunities filter."
         )
         st.stop()
+st.subheader("🏆 Top Opportunities")
 
+top_opportunities = results_df.head(10)
+
+st.dataframe(
+    top_opportunities[
+        [
+            "Ticker",
+            "Company",
+            "Breakout Score",
+            "Grade",
+            "Volume Ratio",
+            "RSI"
+        ]
+    ],
+    use_container_width=True
+)
     st.dataframe(results_df, use_container_width=True)
 
     selected_ticker = st.selectbox(
