@@ -32,7 +32,10 @@ def load_price_data(ticker, period):
 
     return data
 
+
 df = load_price_data(ticker, period)
+
+st.write(df.columns)
 
 st.subheader(f"{ticker} Price Chart")
 fig = px.line(df, y=["Close", "MA_50", "MA_200"])
