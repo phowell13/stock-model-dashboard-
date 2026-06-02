@@ -2,6 +2,8 @@ import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
+from pathlib import Path
+from datetime import datetime
 
 st.set_page_config(page_title="Penny Stock Breakout Scanner", layout="wide")
 
@@ -166,7 +168,43 @@ def get_signal_grade(score):
         return "C"
     else:
         return "D"
+SCAN_FILE = Path("scan_history.csv")
 
+
+def save_scan_results(results_df):
+    if results_df.empty:
+        return
+
+    df_to_save = results_df.copy()
+    df_to_save["Scan Time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    if SCAN_FILE.exists():
+        old_df = pd.read_csv(SCAN_FILE)
+        combined = pd.concat([old_df, df_to_save], ignore_index=True)
+    else:
+        combined = df_to_save
+
+    combined.to_csv(SCAN_FILE, index=False)
+
+
+def load_previous_scan():
+    if not SCAN_FILE.exists():
+        return pd.DataFrame()
+
+    history = pd.read_csv(SCAN_FILE)
+
+    if history.empty or "Scan Time" not in history.columns:
+        return pd.DataFrame()
+
+    latest_time = history["Scan Time"].max()
+    previous_scans = history[history["Scan Time"] < latest_time]
+
+    if previous_scans.empty:
+        return pd.DataFrame()
+
+    previous_time = previous_scans["Scan Time"].max()
+
+    return previous_scans[previous_scans["Scan Time"] == previous_time]
 
 results = []
 
@@ -212,9 +250,41 @@ for ticker in tickers:
 
 results_df = pd.DataFrame(results)
 
+save_scan_results(results_df)
+previous_df = load_previous_scan()
+
 st.subheader("Penny Stock Breakout Results")
 
 if not results_df.empty:
+
+      comparison = results_df.merge(
+        previous_df[["Ticker", "Breakout Score"]],
+        on="Ticker",
+        how="left",
+        suffixes=("", " Previous")
+    )
+
+    comparison["Score Change"] = (
+        comparison["Breakout Score"] - comparison["Breakout Score Previous"]
+    )
+
+    new_breakouts = comparison[
+        (comparison["Breakout Score"] >= 80) &
+        (
+            (comparison["Breakout Score Previous"].isna()) |
+            (comparison["Breakout Score Previous"] < 70)
+        )
+    ]
+
+    st.subheader("New Breakouts")
+
+    if not new_breakouts.empty:
+        st.dataframe(
+            new_breakouts.sort_values("Score Change", ascending=False),
+            use_container_width=True
+        )
+    else:
+        st.info("No new breakouts detected this scan.")
     results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
 
