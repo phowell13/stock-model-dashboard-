@@ -7,6 +7,26 @@ st.set_page_config(page_title="Penny Stock Breakout Scanner", layout="wide")
 
 st.title("Penny Stock Breakout Scanner")
 
+watchlists = {
+    "Custom": "",
+    "UK AIM / Penny Stocks": "PREM.L, HE1.L, BOIL.L, UKOG.L, 88E.L, EUA.L, GGP.L, COPL.L, EEE.L, KOD.L",
+    "US Penny / Small Caps": "SOUN, BBAI, KULR, RGTI, IONQ, LUNR, JOBY, ACHR, OPEN, PLUG",
+    "Mining / Resources": "PREM.L, HE1.L, GGP.L, KOD.L, EUA.L, 88E.L, EEE.L, SOLG.L, UFO.L, MARU.L",
+    "AI / Speculative Tech": "SOUN, BBAI, AI, RGTI, IONQ, KULR, SERV, LUNR, ACHR"
+}
+
+selected_watchlist = st.sidebar.selectbox(
+    "Choose watchlist",
+    list(watchlists.keys())
+)
+
+default_tickers = watchlists[selected_watchlist]
+
+tickers_input = st.sidebar.text_area(
+    "Enter tickers",
+    value=default_tickers if default_tickers else "PREM.L, HE1.L, BOIL.L"
+)
+
 tickers_input = st.sidebar.text_area(
     "Enter tickers",
     value="CARR, SOUN, BBAI, KULR, PREM.L, HE1.L"
