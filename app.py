@@ -22,15 +22,6 @@ selected_watchlist = st.sidebar.selectbox(
 
 default_tickers = watchlists[selected_watchlist]
 
-tickers_input = st.sidebar.text_area(
-    "Enter tickers",
-    value=default_tickers if default_tickers else "PREM.L, HE1.L, BOIL.L"
-)
-
-tickers_input = st.sidebar.text_area(
-    "Enter tickers",
-    value="CARR, SOUN, BBAI, KULR, PREM.L, HE1.L"
-)
 
 period = st.sidebar.selectbox("Period", ["6mo", "1y", "2y", "5y"], index=2)
 
