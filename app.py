@@ -34,17 +34,17 @@ def load_price_data(ticker, period):
         data.columns = data.columns.get_level_values(0)
 
     return data.dropna()
-ticker_obj = yf.Ticker(ticker)
-company_name = ticker_obj.info.get("longName", ticker)
 
-company_name = get_company_name(ticker)
 
-results.append({
-    "Ticker": ticker,
-    "Company": company_name,
-    "Close": round(latest["Close"], 4),
-    ...
-})
+@st.cache_data
+def get_company_name(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        return info.get("longName", ticker)
+    except Exception:
+        return ticker
+
 
 def add_indicators(df):
     df = df.copy()
@@ -131,6 +131,19 @@ def calculate_penny_breakout_score(df):
     return min(score, 100), ", ".join(reasons)
 
 
+def get_signal_grade(score):
+    if score >= 90:
+        return "A+"
+    elif score >= 80:
+        return "A"
+    elif score >= 70:
+        return "B"
+    elif score >= 60:
+        return "C"
+    else:
+        return "D"
+
+
 results = []
 
 for ticker in tickers:
@@ -151,22 +164,24 @@ for ticker in tickers:
 
         if latest["Avg_Value_Traded_20D"] < min_value_traded:
             continue
-score, reasons = calculate_penny_breakout_score(df)
 
-company_name = get_company_name(ticker)
+        score, reasons = calculate_penny_breakout_score(df)
+        company_name = get_company_name(ticker)
 
-results.append({
-    "Ticker": ticker,
-    "Company": company_name,
-    "Close": round(latest["Close"], 4),
-    "Breakout Score": score,
-    "Volume Ratio": round(latest["Volume_Ratio"], 2),
-    "20D Avg Volume": int(latest["Volume_MA_20"]),
-    "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
-    "RSI": round(latest["RSI"], 1),
-    "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
-    "Signal": reasons
-})
+        results.append({
+            "Ticker": ticker,
+            "Company": company_name,
+            "Close": round(latest["Close"], 4),
+            "Breakout Score": score,
+            "Grade": get_signal_grade(score),
+            "Volume Ratio": round(latest["Volume_Ratio"], 2),
+            "20D Avg Volume": int(latest["Volume_MA_20"]),
+            "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
+            "RSI": round(latest["RSI"], 1),
+            "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
+            "Signal": reasons
+        })
+
     except Exception as e:
         st.warning(f"Could not load {ticker}: {e}")
 
@@ -184,26 +199,25 @@ if not results_df.empty:
         results_df["Ticker"].tolist()
     )
 
+    selected_company = results_df.loc[
+        results_df["Ticker"] == selected_ticker,
+        "Company"
+    ].iloc[0]
+
     df = load_price_data(selected_ticker, period)
     df = add_indicators(df).dropna()
 
     score, reasons = calculate_penny_breakout_score(df)
 
-    selected_company = results_df.loc[
-    results_df["Ticker"] == selected_ticker,
-    "Company"
-].iloc[0]
+    st.subheader(f"{selected_company} ({selected_ticker}) Breakout Dashboard")
 
-st.subheader(
-    f"{selected_company} ({selected_ticker}) Breakout Dashboard"
-)
-
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     col1.metric("Latest Price", f"{df['Close'].iloc[-1]:.4f}")
     col2.metric("Breakout Score", f"{score}/100")
-    col3.metric("Volume Ratio", f"{df['Volume_Ratio'].iloc[-1]:.2f}x")
-    col4.metric("RSI", f"{df['RSI'].iloc[-1]:.1f}")
+    col3.metric("Grade", get_signal_grade(score))
+    col4.metric("Volume Ratio", f"{df['Volume_Ratio'].iloc[-1]:.2f}x")
+    col5.metric("RSI", f"{df['RSI'].iloc[-1]:.1f}")
 
     st.write(f"**Signal:** {reasons}")
 
@@ -257,4 +271,7 @@ st.subheader(
     st.plotly_chart(fig, use_container_width=True)
 
 else:
-    st.error("No shares passed the penny-stock filters. Try lowering the volume/value thresholds or adding more tickers.")
+    st.error(
+        "No shares passed the penny-stock filters. "
+        "Try lowering the volume/value thresholds or adding more tickers."
+    )
