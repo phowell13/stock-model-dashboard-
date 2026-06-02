@@ -34,7 +34,23 @@ def load_price_data(ticker, period):
         data.columns = data.columns.get_level_values(0)
 
     return data.dropna()
+@st.cache_data
+def get_company_name(ticker):
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+        return info.get("longName", ticker)
+    except:
+        return ticker
 
+company_name = get_company_name(ticker)
+
+results.append({
+    "Ticker": ticker,
+    "Company": company_name,
+    "Close": round(latest["Close"], 4),
+    ...
+})
 
 def add_indicators(df):
     df = df.copy()
