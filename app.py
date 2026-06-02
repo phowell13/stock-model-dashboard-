@@ -215,7 +215,16 @@ results_df = pd.DataFrame(results)
 st.subheader("Penny Stock Breakout Results")
 
 if not results_df.empty:
+    results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
+
+    if results_df.empty:
+        st.warning(
+            "No shares met your minimum breakout score. "
+            "Try lowering the Top Opportunities filter."
+        )
+        st.stop()
+
     st.dataframe(results_df, use_container_width=True)
 
     selected_ticker = st.selectbox(
