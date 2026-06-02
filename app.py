@@ -12,12 +12,24 @@ period = st.sidebar.selectbox("Period", ["1y", "2y", "5y", "10y"], index=2)
 
 @st.cache_data
 def load_price_data(ticker, period):
-    data = yf.download(ticker, period=period, auto_adjust=True)
+    data = yf.download(
+        ticker,
+        period=period,
+        auto_adjust=True,
+        progress=False
+    )
+
+    # Flatten MultiIndex columns if yfinance returns them
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+
     data = data.dropna()
+
     data["Return"] = data["Close"].pct_change()
     data["Volatility_30d"] = data["Return"].rolling(30).std()
     data["MA_50"] = data["Close"].rolling(50).mean()
     data["MA_200"] = data["Close"].rolling(200).mean()
+
     return data
 
 df = load_price_data(ticker, period)
