@@ -352,6 +352,12 @@ results_df = pd.DataFrame(results)
 save_scan_results(results_df)
 previous_df = load_previous_scan()
 
+if SCAN_FILE.exists():
+    history = pd.read_csv(SCAN_FILE)
+    st.write(f"History rows: {len(history)}")
+
+
+
 st.subheader("Penny Stock Breakout Results")
 if not results_df.empty:
 
