@@ -320,6 +320,7 @@ if not results_df.empty:
     st.dataframe(
         top_opportunities[
             [
+                "Rank",
                 "Ticker",
                 "Company",
                 "Breakout Score",
