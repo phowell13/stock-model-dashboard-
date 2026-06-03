@@ -32,7 +32,56 @@ tickers_input = st.sidebar.text_area(
 
 period = st.sidebar.selectbox("Period", ["6mo", "1y", "2y", "5y"], index=2)
 
-max_price = st.sidebar.number_input("Max share price", value=5.00)
+if selected_watchlist == "UK AIM / Penny Stocks":
+    max_price = 5
+
+elif selected_watchlist == "Mining / Resources":
+    max_price = 10
+
+elif selected_watchlist == "AI / Speculative Tech":
+    max_price = 25
+
+elif selected_watchlist == "US Penny / Small Caps":
+    max_price = 15
+
+else:
+    max_price = st.sidebar.number_input(
+        "Max share price",
+        value=10.0
+    )
+
+st.sidebar.write(f"Max Price Filter: {max_price}")
+auto_price_filter = st.sidebar.checkbox(
+    "Auto price filter",
+    value=True
+)
+if auto_price_filter:
+
+    if selected_watchlist == "UK AIM / Penny Stocks":
+        max_price = 5
+
+    elif selected_watchlist == "Mining / Resources":
+        max_price = 10
+
+    elif selected_watchlist == "AI / Speculative Tech":
+        max_price = 25
+
+    elif selected_watchlist == "US Penny / Small Caps":
+        max_price = 15
+
+    else:
+        max_price = 10
+
+    st.sidebar.write(f"Auto Max Price: {max_price}")
+
+else:
+    max_price = st.sidebar.number_input(
+        "Max share price",
+        value=10.0
+    )
+
+
+
 min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=0)
 min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=0)
 
