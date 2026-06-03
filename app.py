@@ -448,6 +448,27 @@ if not results_df.empty:
             )
         else:
             st.info("No hidden gems detected this scan.")
+            st.subheader("📊 Scanner Summary")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Stocks", len(results_df))
+
+    col2.metric(
+        "New Breakouts",
+        len(new_breakouts) if "new_breakouts" in locals() else 0
+    )
+
+    col3.metric(
+        "Biggest Risers",
+        len(risers) if "risers" in locals() else 0
+    )
+
+    col4.metric(
+        "Hidden Gems",
+        len(hidden_gems) if "hidden_gems" in locals() else 0
+    )
+        
 
     else:
         st.info("No previous scan yet. Refresh later to detect new breakouts.")
