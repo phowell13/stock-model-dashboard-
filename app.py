@@ -353,7 +353,7 @@ previous_df = load_previous_scan()
 
 st.subheader("Penny Stock Breakout Results")
 
-    if not results_df.empty:
+if not results_df.empty:
 
     if not previous_df.empty:
         comparison = results_df.merge(
