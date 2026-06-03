@@ -259,6 +259,7 @@ SCAN_FILE = Path("scan_history.csv")
 
 
 def save_scan_results(results_df):
+    st.write("Saving to:", SCAN_FILE.absolute())
     if results_df.empty:
         return
 
