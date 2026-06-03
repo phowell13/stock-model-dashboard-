@@ -259,8 +259,7 @@ SCAN_FILE = Path("scan_history.csv")
 
 
 def save_scan_results(results_df):
-    history = pd.read_csv(SCAN_FILE)
-    st.write("History rows:", len(history))
+    
     if results_df.empty:
         return
 
