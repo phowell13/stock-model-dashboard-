@@ -450,6 +450,31 @@ if not results_df.empty:
 
     st.subheader("📊 Scanner Summary")
 
+    action_zone = results_df[
+    results_df["Breakout Score"] >= 90
+    ]
+
+    st.subheader("🔥 Action Zone")
+
+    if not action_zone.empty:
+        st.dataframe(
+            action_zone[
+                [
+                    "Rank",
+                    "Ticker",
+                    "Company",
+                    "Breakout Score",
+                    "Grade",
+                    "Status",
+                    "Volume Ratio",
+                    "RSI"
+                ]
+            ],
+        use_container_width=True
+        )
+    else:
+        st.info("No Action Zone candidates today.")
+
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Total Stocks", len(results_df))
