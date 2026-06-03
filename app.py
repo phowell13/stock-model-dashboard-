@@ -450,6 +450,18 @@ if not results_df.empty:
 
     st.subheader("📊 Scanner Summary")
 
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Total Stocks", len(results_df))
+    col2.metric("New Breakouts", len(new_breakouts) if "new_breakouts" in locals() else 0)
+    col3.metric("Biggest Risers", len(risers) if "risers" in locals() else 0)
+    col4.metric("Hidden Gems", len(hidden_gems) if "hidden_gems" in locals() else 0)
+    results_df = results_df[results_df["Breakout Score"] >= min_score]
+    results_df = results_df.sort_values("Breakout Score", ascending=False)
+    results_df["Rank"] = range(1, len(results_df) + 1)
+
+
     action_zone = results_df[
     results_df["Breakout Score"] >= 90
     ]
@@ -470,20 +482,10 @@ if not results_df.empty:
                     "RSI"
                 ]
             ],
-        use_container_width=True
+            use_container_width=True
         )
     else:
         st.info("No Action Zone candidates today.")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric("Total Stocks", len(results_df))
-    col2.metric("New Breakouts", len(new_breakouts) if "new_breakouts" in locals() else 0)
-    col3.metric("Biggest Risers", len(risers) if "risers" in locals() else 0)
-    col4.metric("Hidden Gems", len(hidden_gems) if "hidden_gems" in locals() else 0)
-    results_df = results_df[results_df["Breakout Score"] >= min_score]
-    results_df = results_df.sort_values("Breakout Score", ascending=False)
-    results_df["Rank"] = range(1, len(results_df) + 1)
 
     if results_df.empty:
         st.warning(
