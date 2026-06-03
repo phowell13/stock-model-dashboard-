@@ -389,11 +389,11 @@ if not previous_df.empty:
     else:
         st.info("No previous scan yet. Refresh later to detect new breakouts.")
             if not previous_df.empty:
-        comparison = results_df.merge(
-            previous_df[["Ticker", "Breakout Score"]],
-            on="Ticker",
-            how="left",
-            suffixes=("", " Previous")
+                comparison = results_df.merge(
+                previous_df[["Ticker", "Breakout Score"]],
+                on="Ticker",
+                how="left",
+                suffixes=("", " Previous")
         )
 
         comparison["Score Change"] = (
