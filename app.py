@@ -472,6 +472,15 @@ if not results_df.empty:
     col4.metric("Hidden Gems", len(hidden_gems) if "hidden_gems" in locals() else 0)
     results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
+    if results_df.empty:
+            st.warning(
+                "No shares met your minimum breakout score. "
+                "Try lowering the Top Opportunities filter."
+            )
+            st.stop()
+
+
+    
     results_df["Rank"] = range(1, len(results_df) + 1)
 
 
@@ -500,12 +509,7 @@ if not results_df.empty:
     else:
         st.info("No Action Zone candidates today.")
 
-    if results_df.empty:
-        st.warning(
-            "No shares met your minimum breakout score. "
-            "Try lowering the Top Opportunities filter."
-        )
-        st.stop()
+    
 
 
     st.subheader("🏆 Top Opportunities")
