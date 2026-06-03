@@ -494,6 +494,7 @@ if not results_df.empty:
         )
         st.stop()
 
+
     st.subheader("🏆 Top Opportunities")
 
     top_opportunities = results_df.head(10)
