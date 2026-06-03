@@ -490,6 +490,15 @@ if not results_df.empty:
     st.subheader("Full Scanner Results")
     st.dataframe(results_df, use_container_width=True)
 
+    csv = results_df.to_csv(index=False)
+
+    st.download_button(
+    label="📥 Download Results CSV",
+    data=csv,
+    file_name="scanner_results.csv",
+    mime="text/csv"
+    )
+
     selected_ticker = st.selectbox(
         "Select ticker to chart",
         results_df["Ticker"].tolist()
