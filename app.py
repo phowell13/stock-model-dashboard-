@@ -208,6 +208,16 @@ def load_previous_scan():
 
 results = []
 
+def get_status(score):
+    if score >= 90:
+        return "🔥 Action Zone"
+    elif score >= 80:
+        return "✅ Candidate"
+    elif score >= 70:
+        return "👀 Watch"
+    else:
+        return "❌ Ignore"
+
 for ticker in tickers:
     try:
         df = load_price_data(ticker, period)
@@ -236,6 +246,7 @@ for ticker in tickers:
             "Close": round(latest["Close"], 4),
             "Breakout Score": score,
             "Grade": get_signal_grade(score),
+            "Status": get_status(score),
             "Volume Ratio": round(latest["Volume_Ratio"], 2),
             "20D Avg Volume": int(latest["Volume_MA_20"]),
             "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
@@ -293,6 +304,7 @@ if not results_df.empty:
 
     results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
+    results_df["Rank"] = range(1, len(results_df) + 1)
 
     if results_df.empty:
         st.warning(
