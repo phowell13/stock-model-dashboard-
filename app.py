@@ -33,14 +33,14 @@ tickers_input = st.sidebar.text_area(
 period = st.sidebar.selectbox("Period", ["6mo", "1y", "2y", "5y"], index=2)
 
 max_price = st.sidebar.number_input("Max share price", value=5.00)
-min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=250000)
-min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=100000)
+min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=0)
+min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=0)
 
 min_score = st.sidebar.slider(
     "Minimum breakout score",
     min_value=0,
     max_value=100,
-    value=70,
+    value=0,
     step=5
 )
 
@@ -325,6 +325,7 @@ if not results_df.empty:
                 "Company",
                 "Breakout Score",
                 "Grade",
+                "Status",
                 "Volume Ratio",
                 "RSI"
             ]
