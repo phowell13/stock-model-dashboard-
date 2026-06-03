@@ -352,7 +352,6 @@ save_scan_results(results_df)
 previous_df = load_previous_scan()
 
 st.subheader("Penny Stock Breakout Results")
-
 if not results_df.empty:
 
     if not previous_df.empty:
@@ -361,39 +360,6 @@ if not results_df.empty:
             on="Ticker",
             how="left",
             suffixes=("", " Previous")
-        )
-
-        comparison["Score Change"] = (
-            comparison["Breakout Score"] -
-            comparison["Breakout Score Previous"]
-        )
-
-        new_breakouts = comparison[
-            (comparison["Breakout Score"] >= 80) &
-            (
-                comparison["Breakout Score Previous"].isna()
-                |
-                (comparison["Breakout Score Previous"] < 70)
-            )
-        ]
-
-        st.subheader("🚀 New Breakouts")
-
-        if not new_breakouts.empty:
-            st.dataframe(
-                new_breakouts.sort_values("Score Change", ascending=False),
-                use_container_width=True
-            )
-        else:
-            st.info("No new breakouts detected.")
-    else:
-        st.info("No previous scan yet. Refresh later to detect new breakouts.")
-        if not previous_df.empty:
-                comparison = results_df.merge(
-                previous_df[["Ticker", "Breakout Score"]],
-                on="Ticker",
-                how="left",
-                suffixes=("", " Previous")
         )
 
         comparison["Score Change"] = (
