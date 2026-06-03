@@ -412,6 +412,41 @@ if not results_df.empty:
         else:
             st.info("No score increases detected this scan.")
 
+            hidden_gems = comparison.dropna(subset=["Score Change"])
+
+        hidden_gems = hidden_gems[
+            (hidden_gems["Score Change"] >= 15) &
+            (hidden_gems["Breakout Score"] >= 60) &
+            (hidden_gems["Breakout Score"] < 80)
+        ]
+
+        hidden_gems = hidden_gems.sort_values(
+            "Score Change",
+            ascending=False
+        )
+
+        st.subheader("💎 Hidden Gems")
+
+        if not hidden_gems.empty:
+            st.dataframe(
+                hidden_gems[
+                    [
+                        "Ticker",
+                        "Company",
+                        "Breakout Score Previous",
+                        "Breakout Score",
+                        "Score Change",
+                        "Grade",
+                        "Status",
+                        "Volume Ratio",
+                        "RSI"
+                    ]
+                ].head(10),
+                use_container_width=True
+            )
+        else:
+            st.info("No hidden gems detected this scan.")
+
     else:
         st.info("No previous scan yet. Refresh later to detect new breakouts.")
     results_df = results_df[results_df["Breakout Score"] >= min_score]
