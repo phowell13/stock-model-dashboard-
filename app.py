@@ -82,8 +82,46 @@ else:
 
 
 
-min_avg_volume = st.sidebar.number_input("Minimum 20D average volume", value=0)
-min_value_traded = st.sidebar.number_input("Minimum daily value traded", value=0)
+auto_volume_filter = st.sidebar.checkbox(
+    "Auto volume filters",
+    value=True
+)
+
+if auto_volume_filter:
+
+    if selected_watchlist == "UK AIM / Penny Stocks":
+        min_avg_volume = 50000
+        min_value_traded = 10000
+
+    elif selected_watchlist == "Mining / Resources":
+        min_avg_volume = 100000
+        min_value_traded = 25000
+
+    elif selected_watchlist == "AI / Speculative Tech":
+        min_avg_volume = 500000
+        min_value_traded = 250000
+
+    elif selected_watchlist == "US Penny / Small Caps":
+        min_avg_volume = 250000
+        min_value_traded = 100000
+
+    else:
+        min_avg_volume = 0
+        min_value_traded = 0
+
+    st.sidebar.write(f"Min Avg Volume: {min_avg_volume:,}")
+    st.sidebar.write(f"Min Value Traded: {min_value_traded:,}")
+
+else:
+    min_avg_volume = st.sidebar.number_input(
+        "Minimum 20D average volume",
+        value=250000
+    )
+
+    min_value_traded = st.sidebar.number_input(
+        "Minimum daily value traded",
+        value=100000
+    )
 
 min_score = st.sidebar.slider(
     "Minimum breakout score",
