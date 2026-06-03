@@ -355,7 +355,7 @@ st.subheader("Penny Stock Breakout Results")
 
 if not results_df.empty:
 
-    if not previous_df.empty:
+if not previous_df.empty:
         comparison = results_df.merge(
             previous_df[["Ticker", "Breakout Score"]],
             on="Ticker",
