@@ -257,22 +257,33 @@ def get_signal_grade(score):
         return "D"
 SCAN_FILE = Path("scan_history.csv")
 
-
 def save_scan_results(results_df):
-    
     if results_df.empty:
         return
 
+    today = datetime.now().strftime("%Y-%m-%d")
+
     df_to_save = results_df.copy()
+    df_to_save["Scan Date"] = today
     df_to_save["Scan Time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if SCAN_FILE.exists():
         old_df = pd.read_csv(SCAN_FILE)
+
+        # Remove today's previous scan so we only keep one scan per day
+        if "Scan Date" in old_df.columns:
+            old_df = old_df[old_df["Scan Date"] != today]
+        elif "Scan Time" in old_df.columns:
+            old_df["Scan Date"] = pd.to_datetime(old_df["Scan Time"]).dt.strftime("%Y-%m-%d")
+            old_df = old_df[old_df["Scan Date"] != today]
+
         combined = pd.concat([old_df, df_to_save], ignore_index=True)
+
     else:
         combined = df_to_save
 
     combined.to_csv(SCAN_FILE, index=False)
+
 
 
 def load_previous_scan():
@@ -349,32 +360,8 @@ for ticker in tickers:
 
 results_df = pd.DataFrame(results)
 
-def save_scan_results(results_df):
-    if results_df.empty:
-        return
-
-    today = datetime.now().strftime("%Y-%m-%d")
-
-    df_to_save = results_df.copy()
-    df_to_save["Scan Date"] = today
-    df_to_save["Scan Time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    if SCAN_FILE.exists():
-        old_df = pd.read_csv(SCAN_FILE)
-
-        # Remove today's previous scan so we only keep one scan per day
-        if "Scan Date" in old_df.columns:
-            old_df = old_df[old_df["Scan Date"] != today]
-        elif "Scan Time" in old_df.columns:
-            old_df["Scan Date"] = pd.to_datetime(old_df["Scan Time"]).dt.strftime("%Y-%m-%d")
-            old_df = old_df[old_df["Scan Date"] != today]
-
-        combined = pd.concat([old_df, df_to_save], ignore_index=True)
-
-    else:
-        combined = df_to_save
-
-    combined.to_csv(SCAN_FILE, index=False)
+save_scan_results(results_df)
+previous_df = load_previous_scan()
 
 
 
