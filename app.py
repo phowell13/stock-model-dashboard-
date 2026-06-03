@@ -388,20 +388,39 @@ if not results_df.empty:
             st.info("No new breakouts detected.")
     else:
         st.info("No previous scan yet. Refresh later to detect new breakouts.")
-        if not previous_df.empty:
-        risers = results_df.merge(
+            if not previous_df.empty:
+        comparison = results_df.merge(
             previous_df[["Ticker", "Breakout Score"]],
             on="Ticker",
             how="left",
             suffixes=("", " Previous")
         )
 
-        risers["Score Change"] = (
-            risers["Breakout Score"] -
-            risers["Breakout Score Previous"]
+        comparison["Score Change"] = (
+            comparison["Breakout Score"] -
+            comparison["Breakout Score Previous"]
         )
 
-        risers = risers.dropna(subset=["Score Change"])
+        new_breakouts = comparison[
+            (comparison["Breakout Score"] >= 80) &
+            (
+                comparison["Breakout Score Previous"].isna()
+                |
+                (comparison["Breakout Score Previous"] < 70)
+            )
+        ]
+
+        st.subheader("🚀 New Breakouts")
+
+        if not new_breakouts.empty:
+            st.dataframe(
+                new_breakouts.sort_values("Score Change", ascending=False),
+                use_container_width=True
+            )
+        else:
+            st.info("No new breakouts detected.")
+
+        risers = comparison.dropna(subset=["Score Change"])
         risers = risers[risers["Score Change"] > 0]
         risers = risers.sort_values("Score Change", ascending=False)
 
@@ -426,6 +445,9 @@ if not results_df.empty:
             )
         else:
             st.info("No score increases detected this scan.")
+
+    else:
+        st.info("No previous scan yet. Refresh later to detect new breakouts.")
     results_df = results_df[results_df["Breakout Score"] >= min_score]
     results_df = results_df.sort_values("Breakout Score", ascending=False)
     results_df["Rank"] = range(1, len(results_df) + 1)
