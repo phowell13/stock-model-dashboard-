@@ -366,14 +366,11 @@ previous_df = load_previous_scan()
 if SCAN_FILE.exists():
     history = pd.read_csv(SCAN_FILE)
 
-    st.subheader("History Debug")
-    st.write(f"Rows in history: {len(history)}")
-
-    st.dataframe(
-        history.tail(20),
-        use_container_width=True
+    st.write(
+        history.groupby("Scan Date")
+        .size()
+        .reset_index(name="Stocks Scanned")
     )
-
 
 
 st.subheader("Penny Stock Breakout Results")
