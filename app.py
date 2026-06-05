@@ -353,48 +353,48 @@ def get_status(score):
     else:
         return "❌ Ignore"
 
-    with st.spinner("Scanning stocks..."):
 
-        for ticker in tickers:
-            try:
-                df = load_price_data(ticker, period)
-                df = add_indicators(df).dropna()
-        
-                if len(df) < 120:
-                    continue
-        
-                latest = df.iloc[-1]
-        
-                if latest["Close"] > max_price:
-                    continue
-        
-                if latest["Volume_MA_20"] < min_avg_volume:
-                    continue
-        
-                if latest["Avg_Value_Traded_20D"] < min_value_traded:
-                    continue
-        
-                score, reasons = calculate_penny_breakout_score(df)
-                company_name = get_company_name(ticker)
-        
-                results.append({
-                    "Ticker": ticker,
-                    "Company": company_name,
-                    "Close": round(latest["Close"], 4),
-                    "Breakout Score": score,
-                    "Grade": get_signal_grade(score),
-                    "Status": get_status(score),
-                    "Volume Ratio": round(latest["Volume_Ratio"], 2),
-                    "20D Avg Volume": int(latest["Volume_MA_20"]),
-                    "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
-                    "RSI": round(latest["RSI"], 1),
-                    "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
-                    "Signal": reasons
-                })
-        
-            except Exception as e:
-                st.warning(f"Could not load {ticker}: {e}")
+with st.spinner("Scanning stocks..."):
 
+    for ticker in tickers:
+        try:
+            df = load_price_data(ticker, period)
+            df = add_indicators(df).dropna()
+
+            if len(df) < 120:
+                continue
+
+            latest = df.iloc[-1]
+
+            if latest["Close"] > max_price:
+                continue
+
+            if latest["Volume_MA_20"] < min_avg_volume:
+                continue
+
+            if latest["Avg_Value_Traded_20D"] < min_value_traded:
+                continue
+
+            score, reasons = calculate_penny_breakout_score(df)
+            company_name = get_company_name(ticker)
+
+            results.append({
+                "Ticker": ticker,
+                "Company": company_name,
+                "Close": round(latest["Close"], 4),
+                "Breakout Score": score,
+                "Grade": get_signal_grade(score),
+                "Status": get_status(score),
+                "Volume Ratio": round(latest["Volume_Ratio"], 2),
+                "20D Avg Volume": int(latest["Volume_MA_20"]),
+                "20D Avg Value Traded": int(latest["Avg_Value_Traded_20D"]),
+                "RSI": round(latest["RSI"], 1),
+                "Above 50D Resistance": latest["Close"] > latest["Resistance_50d"],
+                "Signal": reasons
+            })
+
+        except Exception as e:
+            st.warning(f"Could not load {ticker}: {e}")
 
 results_df = pd.DataFrame(results)
 
