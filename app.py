@@ -11,14 +11,16 @@ st.title("Penny Stock Breakout Scanner")
 
 watchlists = {
     "Custom": "",
-    "UK AIM / Penny Stocks": "PREM.L,HE1.L,BOIL.L,88E.L,EUA.L,GGP.L,COPL.L,
+    "UK AIM / Penny Stocks": """
+PREM.L,HE1.L,BOIL.L,88E.L,EUA.L,GGP.L,COPL.L,
 EEE.L,KOD.L,SOLG.L,UFO.L,MARU.L,PHE.L,
 PANR.L,POW.L,CORA.L,PXC.L,GCM.L,
 BMN.L,ARB.L,SRES.L,ORR.L,KEFI.L,
 JLP.L,WRES.L,VAST.L,GST.L,SXX.L,
 KAV.L,RRR.L,MKA.L,AFN.L,TYM.L,
 XTR.L,ATN.L,HZM.L,ECR.L,AAZ.L,
-CTL.L,EMH.L,SPX.L,RBD.L",
+CTL.L,EMH.L,SPX.L,RBD.L
+""",
     "US Penny / Small Caps": "SOUN, BBAI, KULR, RGTI, IONQ, LUNR, JOBY, ACHR, OPEN, PLUG",
     "Mining / Resources": "PREM.L, HE1.L, GGP.L, KOD.L, EUA.L, 88E.L, EEE.L, SOLG.L, UFO.L, MARU.L",
     "AI / Speculative Tech": "SOUN, BBAI, AI, RGTI, IONQ, KULR, SERV, LUNR, ACHR"
