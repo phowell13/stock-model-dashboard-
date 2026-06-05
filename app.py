@@ -353,7 +353,7 @@ def get_status(score):
     else:
         return "❌ Ignore"
 
-with st.spinner("Scanning stocks..."):
+    with st.spinner("Scanning stocks..."):
 
 for ticker in tickers:
     try:
