@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from pathlib import Path
 from datetime import datetime
 
+
 st.set_page_config(page_title="Penny Stock Breakout Scanner", layout="wide")
 
 st.title("Penny Stock Breakout Scanner")
@@ -351,6 +352,8 @@ def get_status(score):
         return "👀 Watch"
     else:
         return "❌ Ignore"
+
+with st.spinner("Scanning stocks..."):
 
 for ticker in tickers:
     try:
