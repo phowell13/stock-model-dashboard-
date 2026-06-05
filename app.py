@@ -543,7 +543,10 @@ if not results_df.empty:
     st.subheader("Full Scanner Results")
     st.dataframe(results_df, use_container_width=True)
 
-    csv = results_df.to_csv(index=False)
+    export_df = results_df.copy()
+    export_df["Scan Date"] = datetime.now().strftime("%Y-%m-%d")
+
+    csv = export_df.to_csv(index=False)
 
     st.download_button(
     label="📥 Download Results CSV",
