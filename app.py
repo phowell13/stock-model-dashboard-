@@ -401,6 +401,12 @@ with st.spinner("Scanning stocks..."):
 
 results_df = pd.DataFrame(results)
 
+st.write(
+    results_df["Breakout Score"]
+    .value_counts()
+    .sort_index()
+)
+
 save_scan_results(results_df)
 previous_df = load_previous_scan()
 
