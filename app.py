@@ -421,6 +421,16 @@ if SCAN_FILE.exists():
 
 
 st.subheader("Penny Stock Breakout Results")
+st.write(
+    results_df[
+        ["Ticker", "Breakout Score", "Signal"]
+    ]
+    .sort_values(
+        "Breakout Score",
+        ascending=False
+    )
+    .head(5)
+)
 if not results_df.empty:
 
     if not previous_df.empty:
