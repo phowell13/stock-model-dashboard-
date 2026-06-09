@@ -168,6 +168,9 @@ min_score = st.sidebar.slider(
 )
 
 tickers = [t.strip().upper() for t in tickers_input.split(",") if t.strip()]
+st.sidebar.write(
+    f"Tickers loaded: {len(tickers)}"
+)
 
 
 @st.cache_data
