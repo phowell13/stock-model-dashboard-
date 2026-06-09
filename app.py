@@ -579,6 +579,31 @@ if not results_df.empty:
 
     st.subheader("🏆 Top Opportunities")
 
+    emerging = results_df[
+    results_df["Breakout Score"] >= 35
+    ].sort_values(
+        "Breakout Score",
+        ascending=False
+    )
+    
+    st.subheader("🌱 Emerging Setups")
+    
+    st.dataframe(
+        emerging[
+            [
+                "Ticker",
+                "Company",
+                "Breakout Score",
+                "Grade",
+                "Volume Ratio",
+                "RSI",
+                "Signal"
+            ]
+        ],
+        use_container_width=True
+    )
+    
+
     top_opportunities = results_df.head(10)
 
     st.dataframe(
